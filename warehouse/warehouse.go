@@ -1066,7 +1066,7 @@ func getLoadFileFormat(whType string) string {
 	case "BQ":
 		return "json.gz"
 	case "S3_DATALAKE", "GCS_DATALAKE", "AZURE_DATALAKE":
-		return "parquet"
+		return "json.gz"
 	case "RS":
 		if useParquetLoadFilesRS {
 			return "parquet"
