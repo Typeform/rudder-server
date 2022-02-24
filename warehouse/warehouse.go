@@ -1771,7 +1771,7 @@ func getLoadFileType(wh string) string {
 		}
 		return warehouseutils.LOAD_FILE_TYPE_CSV
 	case "S3_DATALAKE", "GCS_DATALAKE", "AZURE_DATALAKE":
-		return warehouseutils.LOAD_FILE_TYPE_PARQUET
+		return warehouseutils.LOAD_FILE_TYPE_JSON
 	case "DELTALAKE":
 		return warehouseutils.LOAD_FILE_TYPE_CSV
 	default:
