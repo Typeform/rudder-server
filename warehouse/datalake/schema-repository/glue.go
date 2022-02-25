@@ -23,10 +23,9 @@ var (
 	UseGlueConfig       = "useGlue"
 
 	// glue
-	glueSerdeName             = "ParquetHiveSerDe"
-	glueSerdeSerializationLib = "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe"
-	glueParquetInputFormat    = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat"
-	glueParquetOutputFormat   = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat"
+	glueSerdeSerializationLib     = "org.openx.data.jsonserde.JsonSerDe"
+	glueTextInputFormat           = "org.apache.hadoop.mapred.TextInputFormat"
+	glueIgnoreKeyTextOutputFormat = "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
 )
 
 type GlueSchemaRepository struct {
@@ -127,7 +126,8 @@ func (gl *GlueSchemaRepository) getPartitionKeys() []*glue.Column {
 func (gl *GlueSchemaRepository) CreateTable(tableName string, columnMap map[string]string) (err error) {
 	// create table request
 	tableInput := &glue.TableInput{
-		Name: aws.String(tableName),
+		Name:       aws.String(tableName),
+		Parameters: map[string]*string{"compressionType": aws.String("gzip")},
 	}
 	tableInput.PartitionKeys = gl.getPartitionKeys()
 	input := glue.CreateTableInput{
@@ -151,7 +151,8 @@ func (gl *GlueSchemaRepository) AddColumn(tableName string, columnName string, c
 	updateTableInput := glue.UpdateTableInput{
 		DatabaseName: aws.String(gl.Namespace),
 		TableInput: &glue.TableInput{
-			Name: aws.String(tableName),
+			Name:       aws.String(tableName),
+			Parameters: map[string]*string{"compressionType": aws.String("gzip")},
 		},
 	}
 
@@ -212,15 +213,16 @@ func getGlueClient(wh warehouseutils.WarehouseT) (*glue.Glue, error) {
 }
 
 func (gl *GlueSchemaRepository) getStorageDescriptor(tableName string, columnMap map[string]string) *glue.StorageDescriptor {
+
 	storageDescriptor := glue.StorageDescriptor{
 		Columns:  []*glue.Column{},
 		Location: aws.String(gl.getS3LocationForTable(tableName)),
 		SerdeInfo: &glue.SerDeInfo{
-			Name:                 aws.String(glueSerdeName),
 			SerializationLibrary: aws.String(glueSerdeSerializationLib),
+			Parameters:           map[string]*string{"serialization.format": aws.String("1")},
 		},
-		InputFormat:  aws.String(glueParquetInputFormat),
-		OutputFormat: aws.String(glueParquetOutputFormat),
+		InputFormat:  aws.String(glueTextInputFormat),
+		OutputFormat: aws.String(glueIgnoreKeyTextOutputFormat),
 	}
 
 	// add columns to storage descriptor
@@ -260,11 +262,11 @@ func (gl *GlueSchemaRepository) RefreshPartitions(tableName string, loadFiles []
 		storageDescriptor := glue.StorageDescriptor{
 			Location: aws.String(locationFolder),
 			SerdeInfo: &glue.SerDeInfo{
-				Name:                 aws.String(glueSerdeName),
 				SerializationLibrary: aws.String(glueSerdeSerializationLib),
+				Parameters:           map[string]*string{"serialization.format": aws.String("1")},
 			},
-			InputFormat:  aws.String(glueParquetInputFormat),
-			OutputFormat: aws.String(glueParquetOutputFormat)}
+			InputFormat:  aws.String(glueTextInputFormat),
+			OutputFormat: aws.String(glueIgnoreKeyTextOutputFormat)}
 		pathParts := strings.Split(locationFolder, "/")
 		partitioning := strings.Split(pathParts[len(pathParts)-1], "=")
 		if len(partitioning) < 2 {
