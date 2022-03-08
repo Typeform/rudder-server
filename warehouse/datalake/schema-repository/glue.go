@@ -115,11 +115,17 @@ func (gl *GlueSchemaRepository) CreateSchema() (err error) {
 }
 
 func (gl *GlueSchemaRepository) getPartitionKeys() []*glue.Column {
-	timeWindowFormat, _ := gl.Warehouse.Destination.Config["timeWindowFormat"].(string)
-	if timeWindowFormat != "" {
-		// Assumes a well-formed partitioning format
-		columnName := strings.Split(timeWindowFormat, "=")[0]
-		return []*glue.Column{&glue.Column{Name: aws.String(columnName), Type: aws.String("date")}}
+	var partitionColumns []*glue.Column
+	for _, partitionPair := range gl.Warehouse.DestPartitionKeys {
+		// Assumes a well-formed partitioning pair
+		columnName := partitionPair["key"]
+		if columnName != "" {
+			partitionColumns = append(partitionColumns, &glue.Column{Name: aws.String(columnName), Type: aws.String("date")})
+		}
+	}
+
+	if len(partitionColumns) > 0 {
+		return partitionColumns
 	}
 	return nil
 }

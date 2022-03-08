@@ -263,11 +263,12 @@ func (wh *HandleT) backendConfigSubscriber() {
 				}
 				namespace := wh.getNamespace(destination.Config, source, destination, wh.destType)
 				warehouse := warehouseutils.WarehouseT{
-					Source:      source,
-					Destination: destination,
-					Namespace:   namespace,
-					Type:        wh.destType,
-					Identifier:  warehouseutils.GetWarehouseIdentifier(wh.destType, source.ID, destination.ID),
+					Source:            source,
+					Destination:       destination,
+					Namespace:         namespace,
+					Type:              wh.destType,
+					Identifier:        warehouseutils.GetWarehouseIdentifier(wh.destType, source.ID, destination.ID),
+					DestPartitionKeys: warehouseutils.GetPartitionKeysFromConfig(destination.Config),
 				}
 				wh.warehouses = append(wh.warehouses, warehouse)
 
@@ -1105,11 +1106,12 @@ func minimalConfigSubscriber() {
 						connectionsMap[destination.ID] = map[string]warehouseutils.WarehouseT{}
 					}
 					connectionsMap[destination.ID][source.ID] = warehouseutils.WarehouseT{
-						Destination: destination,
-						Namespace:   namespace,
-						Type:        wh.destType,
-						Source:      source,
-						Identifier:  warehouseutils.GetWarehouseIdentifier(wh.destType, source.ID, destination.ID),
+						Destination:       destination,
+						Namespace:         namespace,
+						Type:              wh.destType,
+						Source:            source,
+						Identifier:        warehouseutils.GetWarehouseIdentifier(wh.destType, source.ID, destination.ID),
+						DestPartitionKeys: warehouseutils.GetPartitionKeysFromConfig(destination.Config),
 					}
 					connectionsMapLock.Unlock()
 				}
