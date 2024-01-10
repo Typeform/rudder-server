@@ -1,3 +1,4 @@
+<a href=https://engineering-metrics.typeform.tf/standards-adoption-tool/reports/rudder-server/><img src=https://api.typeform.com/repositories/rudder-server/badges.svg /></a>
 <p align="center">
   <a href="https://rudderstack.com/">
     <img src="resources/logo.png">
